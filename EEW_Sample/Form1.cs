@@ -26,7 +26,7 @@ namespace EEW_Sample
 
         }
 
-        private readonly HttpClient Client = new HttpClient();
+        private readonly HttpClient client = new HttpClient();
 
         private async void timer1_Tick(object sender, EventArgs e)
         {
@@ -38,7 +38,7 @@ namespace EEW_Sample
 
             var url = $"http://www.kmoni.bosai.go.jp/webservice/hypo/eew/{time}.json"; //強震モニタURLの指定
 
-            var json = await Client.GetStringAsync(url); //awaitを用いた非同期JSON取得
+            var json = await client.GetStringAsync(url); //awaitを用いた非同期JSON取得
             var eew = JsonConvert.DeserializeObject<EEW>(json);//EEWクラスを用いてJSONを解析(デシリアライズ)
             //JSONの中から使うデータを指定して使いやすいように名前を変えます
             var 取得時刻 = eew.report_time;
