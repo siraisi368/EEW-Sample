@@ -34,8 +34,6 @@ namespace EEW_Sample
             var tm = dt.AddSeconds(-2); //現在時刻から2秒引く(取得失敗を防ぐため)
             var time = tm.ToString("yyyyMMddHHmmss");//時刻形式の指定(西暦/月/日/時/分/秒)
 
-
-
             var url = $"http://www.kmoni.bosai.go.jp/webservice/hypo/eew/{time}.json"; //強震モニタURLの指定
 
             var json = await client.GetStringAsync(url); //awaitを用いた非同期JSON取得
