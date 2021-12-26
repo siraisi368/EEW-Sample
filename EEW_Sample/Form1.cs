@@ -21,11 +21,6 @@ namespace EEW_Sample
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private readonly HttpClient client = new HttpClient();
 
         private async void timer1_Tick(object sender, EventArgs e)
@@ -38,87 +33,61 @@ namespace EEW_Sample
 
             var json = await client.GetStringAsync(url); //awaitを用いた非同期JSON取得
             var eew = JsonConvert.DeserializeObject<EEW>(json);//EEWクラスを用いてJSONを解析(デシリアライズ)
-            //JSONの中から使うデータを指定して使いやすいように名前を変えます
-            var 取得時刻 = eew.report_time;
-            var 震源 = eew.region_name;
-            var 緯度 = eew.latitude;
-            var 経度 = eew.longitude;
-            var キャンセルフラグ = eew.is_cancel;
-            var 深さ = eew.depth;
-            var 震度 = eew.calcintensity;
-            var 最終報フラグ = eew.is_final;
-            var 報数 = eew.report_num;
-            var 発生時刻 = eew.origin_time;
-            var 警報フラグ = eew.alertflg;
-            var EEWフラグ = eew.result.message;
-            var マグニチュード = eew.magunitude;
             
-            //実処理部分(ここでは全部を一行に入れてます)
-            if(EEWフラグ == "データがありません")//もしEEWが発表されていないなら
-            {
-                label1.Text = "EEW 未発表";
-            }
-            else //そうでなければ
-            {
-                if(警報フラグ == "予報")//もし予報なら
-                {
-                    if(最終報フラグ == "false")//最終報でなければ
-                    {
-                        label1.Text = $"緊急地震速報(予報)  第{報数}報  {震源}で地震  最大震度{震度}\r\nマグニチュード{マグニチュード}  震源の深さ:{深さ}";
-                    }
-                    else//そうでなければ
-                    {
-                        label1.Text = $"緊急地震速報(予報)  最終報  {震源}で地震  最大震度{震度}\r\nマグニチュード{マグニチュード}  震源の深さ:{深さ}";
-                    }
+            //JSONの中から使うデータを指定して使いやすいように名前を変えます
+            var repo_time = eew.report_time;                             // 取得時刻(string)
+            var reg_name = eew.region_name;                              // 震源地名(string)
+            var latitude = eew.latitude;                                 // 緯度(string(本来はfloat))
+            var longtude = eew.longitude;                                // 経度(string(本来はfloat))
+            var depth = eew.depth;                                       // 深さ(string)
+            var max_int = eew.calcintensity;                             // 予測震度(string)
+            var mag = eew.magunitude;                                    // マグニチュード(string(本来はfloat))
+            bool end_flg = System.Convert.ToBoolean(eew.is_final);       // 最終報フラグ(bool)
+            var repo_num = eew.report_num;                               // 報番(string(本来はint))
+            var ori_time = eew.origin_time;                              // 発生時刻(string)
+            var aler_flg = eew.alertflg;                                 // 警報フラグ(string)
+            var eew_flg = eew.result.message;                            // EEWフラグ(string)
+            string eew_flgs = null;
+            
+            //種別判別(これをAPIレベルでやれるようになってほしい)
+            if (eew_flg != "データがありません"){
+                if(aler_flg == "予報"){
+                    eew_flgs = "fore";    
                 }
-                if (警報フラグ == "警報")//もし警報なら
-                {
-                    if (最終報フラグ == "false")//最終報でなければ
-                    {
-                        label1.Text = $"緊急地震速報(警報)  第{報数}報  {震源}で地震  最大震度{震度}\r\nマグニチュード{マグニチュード}  震源の深さ:{深さ}";
-                    }
-                    else//そうでなければ
-                    {
-                        label1.Text = $"緊急地震速報(警報)  最終報  {震源}で地震  最大震度{震度}\r\nマグニチュード{マグニチュード}  震源の深さ:{深さ}";
-                    }
+                else if (end_flg != false){
+                    eew_flgs = "fore_end";
+                }
+                if (aler_flg == "予報"){
+                    eew_flgs = "war";
+                }
+                else if (end_flg != false){
+                    eew_flgs = "war_end";
                 }
             }
-        }
-        
-        //EEWクラス
-        class EEW
-        {
-            public Result result { get; set; }
-            public string report_time { get; set; }
-            public string region_code { get; set; }
-            public string request_time { get; set; }
-            public string region_name { get; set; }
-            public string longitude { get; set; }
-            public String is_cancel { get; set; }
-            public string depth { get; set; }
-            public string calcintensity { get; set; }
-            public String is_final { get; set; }
-            public String is_training { get; set; }
-            public string latitude { get; set; }
-            public string origin_time { get; set; }
-            public Security security { get; set; }
-            public string magunitude { get; set; }
-            public string report_num { get; set; }
-            public string request_hypo_type { get; set; }
-            public string report_id { get; set; }
-            public string alertflg { get; set; }
-        }
-        public class Result
-        {
-            public string status { get; set; }
-            public string message { get; set; }
-            public String is_auth { get; set; }
+            else{
+                eew_flgs = "none";
+            }
+
+            //実処理部分(switch文を使ってけ)
+            switch (eew_flgs){
+                case "fore":
+                    label1.Text = $"緊急地震速報(予報)  第{repo_num}報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                    break;
+                case "fore_end":
+                    label1.Text = $"緊急地震速報(予報)  最終報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                    break;
+                case "war":
+                    label1.Text = $"緊急地震速報(警報)  第{repo_num}報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                    break;
+                case "war_end":
+                    label1.Text = $"緊急地震速報(警報)  最終報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                    break;
+                case "none":
+                    label1.Text = "EEWが発表されていません";
+                    break;
+            }
+
         }
 
-        public class Security
-        {
-            public string realm { get; set; }
-            public string hash { get; set; }
-        }
-    }
+    }    
 }
