@@ -42,7 +42,7 @@ namespace EEW_Sample
             var depth = eew.depth;                                       // 深さ(string)
             var max_int = eew.calcintensity;                             // 予測震度(string)
             var mag = eew.magunitude;                                    // マグニチュード(string(本来はfloat))
-            bool end_flg = System.Convert.ToBoolean(eew.is_final);       // 最終報フラグ(bool)
+            bool end_flg = eew.is_final == "true";                       //最終報フラグ(bool)
             var repo_num = eew.report_num;                               // 報番(string(本来はint))
             var ori_time = eew.origin_time;                              // 発生時刻(string)
             var aler_flg = eew.alertflg;                                 // 警報フラグ(string)
