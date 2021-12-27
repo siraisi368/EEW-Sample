@@ -10,7 +10,9 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
-//Newtonsoft.JsonをNugetから導入するのを忘れずに
+//Newtonsoft.JsonをNugetから導入してください。
+//コメントは必要最低限だけ残してしっかり消して使いましょう。
+//このコードの一部、またはすべてを別ソフトに組み込むこと、有償配布、公開を可とする(詳しくは「Apache License 2.0」のライセンス条文をお読みください)
 
 namespace EEW_Sample
 {
@@ -32,8 +34,8 @@ namespace EEW_Sample
 
                 var url = $"http://www.kmoni.bosai.go.jp/webservice/hypo/eew/{time}.json"; //強震モニタURLの指定
 
-                var json = await client.GetStringAsync(url); //awaitを用いた非同期JSON取得
-                var eew = JsonConvert.DeserializeObject<EEW>(json);//EEWクラスを用いてJSONを解析(デシリアライズ)
+                var json = await client.GetStringAsync(url);                 //awaitを用いた非同期JSON取得
+                var eew = JsonConvert.DeserializeObject<EEW>(json);          //EEWクラスを用いてJSONを解析(デシリアライズ)
 
                 //JSONの中から使うデータを指定して使いやすいように名前を変えます
                 var repo_time = eew.report_time;                             // 取得時刻(string)
@@ -51,28 +53,28 @@ namespace EEW_Sample
                 string eew_flgs = null;
 
                 //種別判別(これをAPIレベルでやれるようになってほしい)
-                if (eew_flg != "データがありません")
+                if (eew_flg != "データがありません")     //eew_flg が true のとき
                 {
-                    if (aler_flg == "予報")
+                    if (aler_flg == "予報")              //aler_flg が 予報 のとき
                     {
-                        eew_flgs = "fore";
+                        eew_flgs = "fore";               //eew_flgs に "fore" を代入
                     }
-                    else if (end_flg != false)
+                    else if (end_flg == true)            //aler_flg が 予報 で end_flg が true のとき
                     {
-                        eew_flgs = "fore_end";
+                        eew_flgs = "fore_end";           //eew_flgs に "fore_end" を代入
                     }
-                    if (aler_flg == "予報")
+                    if (aler_flg == "警報")              //aler_flg が 警報 のとき
                     {
-                        eew_flgs = "war";
+                        eew_flgs = "war";                //eew_flgs に "war" を代入
                     }
-                    else if (end_flg != false)
+                    else if (end_flg != false)           //aler_flg が 警報 で end_flg が true のとき
                     {
-                        eew_flgs = "war_end";
+                        eew_flgs = "war_end";            //eew_flgs に "war_end" を代入
                     }
                 }
-                else
+                else                                     //eew_flg が false のとき
                 {
-                    eew_flgs = "none";
+                    eew_flgs = "none";                   //eew_flgs に "none" を代入
                 }
 
                 //実処理部分(switch文を使ってけ)
