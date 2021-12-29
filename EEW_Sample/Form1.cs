@@ -45,7 +45,7 @@ namespace EEW_Sample
                 var depth = eew.depth;                                       // 深さ(string)
                 var max_int = eew.calcintensity;                             // 予測震度(string)
                 var mag = eew.magunitude;                                    // マグニチュード(string(本来はfloat))
-                bool end_flg = eew.is_final == "true";                       //最終報フラグ(bool)
+                bool end_flg = eew.is_final == "true";                       // 最終報フラグ(bool)
                 var repo_num = eew.report_num;                               // 報番(string(本来はint))
                 var ori_time = eew.origin_time;                              // 発生時刻(string)
                 var aler_flg = eew.alertflg;                                 // 警報フラグ(string)
@@ -53,9 +53,9 @@ namespace EEW_Sample
                 string eew_flgs = null;
 
                 //種別判別(これをAPIレベルでやれるようになってほしい)
-                if (eew_flg != "データがありません")     //eew_flg が true のとき
+                if (eew_flg != "データがありません")        //eew_flg が true のとき
                 {
-                    if (aler_flg == "予報")              //aler_flg が 予報 のとき
+                    if (aler_flg == "予報")               //aler_flg が 予報 のとき
                     {
                         eew_flgs = "fore";               //eew_flgs に "fore" を代入
                     }
@@ -63,7 +63,7 @@ namespace EEW_Sample
                     {
                         eew_flgs = "fore_end";           //eew_flgs に "fore_end" を代入
                     }
-                    if (aler_flg == "警報")              //aler_flg が 警報 のとき
+                    if (aler_flg == "警報")               //aler_flg が 警報 のとき
                     {
                         eew_flgs = "war";                //eew_flgs に "war" を代入
                     }
@@ -81,16 +81,16 @@ namespace EEW_Sample
                 switch (eew_flgs)
                 {
                     case "fore":
-                        label1.Text = $"緊急地震速報(予報)  第{repo_num}報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                        label1.Text = $"緊急地震速報(予報)  第{repo_num}報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
                         break;
                     case "fore_end":
-                        label1.Text = $"緊急地震速報(予報)  最終報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                        label1.Text = $"緊急地震速報(予報)  最終報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
                         break;
                     case "war":
-                        label1.Text = $"緊急地震速報(警報)  第{repo_num}報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                        label1.Text = $"緊急地震速報(警報)  第{repo_num}報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
                         break;
                     case "war_end":
-                        label1.Text = $"緊急地震速報(警報)  最終報  {reg_name}で地震  最大max_int{max_int}\r\nmag{mag}  reg_nameのdepth:{depth}";
+                        label1.Text = $"緊急地震速報(警報)  最終報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
                         break;
                     case "none":
                         label1.Text = "EEWが発表されていません";
