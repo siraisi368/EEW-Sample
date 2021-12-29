@@ -55,26 +55,29 @@ namespace EEW_Sample
                 //種別判別(これをAPIレベルでやれるようになってほしい)
                 if (eew_flg != "データがありません")        //eew_flg が true のとき
                 {
-                    if (aler_flg == "予報")               //aler_flg が 予報 のとき
+                    if (aler_flg == "予報")                 //aler_flg が 予報 のとき
                     {
-                        eew_flgs = "fore";               //eew_flgs に "fore" を代入
+                        eew_flgs = "fore";                  //eew_flgs に "fore" を代入
+
+                        if (end_flg == true)                //aler_flg が 予報 で end_flg が true のとき
+                        {
+                            eew_flgs = "fore_end";          //eew_flgs に "fore_end" を代入
+                        }
                     }
-                    else if (end_flg == true)            //aler_flg が 予報 で end_flg が true のとき
+                    
+                    if (aler_flg == "警報")                 //aler_flg が 警報 のとき
                     {
-                        eew_flgs = "fore_end";           //eew_flgs に "fore_end" を代入
-                    }
-                    if (aler_flg == "警報")               //aler_flg が 警報 のとき
-                    {
-                        eew_flgs = "war";                //eew_flgs に "war" を代入
-                    }
-                    else if (end_flg != false)           //aler_flg が 警報 で end_flg が true のとき
-                    {
-                        eew_flgs = "war_end";            //eew_flgs に "war_end" を代入
+                        eew_flgs = "war";                   //eew_flgs に "war" を代入
+
+                        if (end_flg == true)                //aler_flg が 警報 で end_flg が true のとき
+                        {
+                            eew_flgs = "war_end";           //eew_flgs に "war_end" を代入
+                        }
                     }
                 }
-                else                                     //eew_flg が false のとき
+                else                                        //eew_flg が false のとき
                 {
-                    eew_flgs = "none";                   //eew_flgs に "none" を代入
+                    eew_flgs = "none";                      //eew_flgs に "none" を代入
                 }
 
                 //実処理部分(switch文を使ってけ)
