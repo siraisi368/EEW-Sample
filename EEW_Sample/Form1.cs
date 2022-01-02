@@ -1,20 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Newtonsoft.Json;
-using System.Net;
+using System;
 using System.Net.Http;
-//Newtonsoft.JsonをNugetから導入してください。
-//コメントは必要最低限だけ残してしっかり消して使いましょう。
-//このコードの一部、またはすべてを別ソフトに組み込むこと、有償配布、公開を可とする(詳しくは「Apache License 2.0」のライセンス条文をお読みください)
-
-namespace EEW_Sample
+using System.Windows.Forms;
+using System.Threading.Tasks;
+namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
@@ -23,91 +12,92 @@ namespace EEW_Sample
             InitializeComponent();
         }
 
-        private readonly HttpClient client = new HttpClient();
+        public readonly HttpClient client = new HttpClient();
 
-        private async void timer1_Tick(object sender, EventArgs e)
+        private async void timer1_Tick(object sender, EventArgs e)//緊急地震速報(NIED)
         {
-            try{
-                DateTime dt = DateTime.Now; //現在時刻の取得(PC時刻より)
-                var tm = dt.AddSeconds(-2); //現在時刻から2秒引く(取得失敗を防ぐため)
-                var time = tm.ToString("yyyyMMddHHmmss");//時刻形式の指定(西暦/月/日/時/分/秒)
+            try
+            {
+                var url2 = "http://www.kmoni.bosai.go.jp/webservice/server/pros/latest.json";//時刻調整 NIEDのAPIのURLをurl2に代入
+                var json2 = await client.GetStringAsync(url2);//非同期処理でurl2(http://....)を取得
+                var eew2 = JsonConvert.DeserializeObject<NIEDTime.Root>(json2);//Json解析 NIEDTimeはTime.csにあります
+                var time = eew2.latest_time.Replace("/", "").Replace(":", "").Replace(" ", "");//解析したJsonのlatest_timeの"/",":"," "を削除
 
-                var url = $"http://www.kmoni.bosai.go.jp/webservice/hypo/eew/{time}.json"; //強震モニタURLの指定
+                label6.Text = eew2.latest_time;//時間表示
 
-                var json = await client.GetStringAsync(url);                 //awaitを用いた非同期JSON取得
-                var eew = JsonConvert.DeserializeObject<EEW>(json);          //EEWクラスを用いてJSONを解析(デシリアライズ)
+                var json = await client.GetStringAsync($"http://www.kmoni.bosai.go.jp/webservice/hypo/eew/{time}.json");//取得した時刻の緊急地震速報を取得
+                var eew = JsonConvert.DeserializeObject<NIED>(json);//Json解析 NIEDはJsonDeserialize.csにあります
+                string eew_flgs = null;//eew_flgsを作成
 
-                //JSONの中から使うデータを指定して使いやすいように名前を変えます
-                var repo_time = eew.report_time;                             // 取得時刻(string)
-                var reg_name = eew.region_name;                              // 震源地名(string)
-                var latitude = eew.latitude;                                 // 緯度(string(本来はfloat))
-                var longtude = eew.longitude;                                // 経度(string(本来はfloat))
-                var depth = eew.depth;                                       // 深さ(string)
-                var max_int = eew.calcintensity;                             // 予測震度(string)
-                var mag = eew.magunitude;                                    // マグニチュード(string(本来はfloat))
-                bool end_flg = eew.is_final == "true";                       // 最終報フラグ(bool)
-                var repo_num = eew.report_num;                               // 報番(string(本来はint))
-                var ori_time = eew.origin_time;                              // 発生時刻(string)
-                var aler_flg = eew.alertflg;                                 // 警報フラグ(string)
-                var eew_flg = eew.result.message;                            // EEWフラグ(string)
-                string eew_flgs = null;
+                label2.Text = eew.result.message;//テスト用 result.messageをlabel2に表示
+                label3.Text = eew.alertflg;//テスト用 result.messageをlabel3に表示
 
-                //種別判別(これをAPIレベルでやれるようになってほしい)
-                if (eew_flg != "データがありません")        //eew_flg が true のとき
+                //ここで緊急地震速報の状態を識別
+                if (eew.result.message != "データがありません")//a != b はaとbが異なることを表す
                 {
-                    if (aler_flg == "予報")                 //aler_flg が 予報 のとき
+                    if (eew.alertflg == "予報")
                     {
-                        eew_flgs = "fore";                  //eew_flgs に "fore" を代入
+                        eew_flgs = "fore";
 
-                        if (end_flg == true)                //aler_flg が 予報 で end_flg が true のとき
+                        if (eew.is_final == "true")
                         {
-                            eew_flgs = "fore_end";          //eew_flgs に "fore_end" を代入
+                            eew_flgs = "fore_end";
                         }
                     }
-                    
-                    if (aler_flg == "警報")                 //aler_flg が 警報 のとき
-                    {
-                        eew_flgs = "war";                   //eew_flgs に "war" を代入
 
-                        if (end_flg == true)                //aler_flg が 警報 で end_flg が true のとき
+                    if (eew.alertflg == "警報")
+                    {
+                        eew_flgs = "warning";
+                        if (eew.is_final == "true")
                         {
-                            eew_flgs = "war_end";           //eew_flgs に "war_end" を代入
+                            eew_flgs = "warning_end";
                         }
                     }
                 }
-                else                                        //eew_flg が false のとき
+                else
                 {
-                    eew_flgs = "none";                      //eew_flgs に "none" を代入
+                    eew_flgs = "none";//result.messageが データがありません のときは eew_flgsがnoneになる
                 }
 
-                //実処理部分(switch文を使ってけ)
-                switch (eew_flgs)
+                switch (eew_flgs)//switch文 この場合、eew_flgsの中身によって挙動が変わる
                 {
                     case "fore":
-                        label1.Text = $"緊急地震速報(予報)  第{repo_num}報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
+                        label1.Text = $"緊急地震速報(予報) 第{eew.report_num}報  {eew.region_name}で地震  最大震度{eew.calcintensity}\r\nマグニチュード{eew.magunitude}  震源の深さ:{eew.depth}";
                         break;
                     case "fore_end":
-                        label1.Text = $"緊急地震速報(予報)  最終報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
+                        label1.Text = $"緊急地震速報(予報)  最終報  {eew.region_name}で地震  最大震度{eew.calcintensity}\r\nマグニチュード{eew.magunitude}  震源の深さ:{eew.depth}";
                         break;
-                    case "war":
-                        label1.Text = $"緊急地震速報(警報)  第{repo_num}報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
+                    case "warning":
+                        label1.Text = $"緊急地震速報(警報)  第{eew.report_num}報  {eew.region_name}で地震  最大震度{eew.calcintensity}\r\nマグニチュード{eew.magunitude}  震源の深さ:{eew.depth}";
                         break;
-                    case "war_end":
-                        label1.Text = $"緊急地震速報(警報)  最終報  {reg_name}で地震  最大震度{max_int}\r\nマグニチュード{mag}  震源の深さ:{depth}";
+                    case "warning_end":
+                        label1.Text = $"緊急地震速報(警報)  最終報  {eew.region_name}で地震  最大震度{eew.calcintensity}\r\nマグニチュード{eew.magunitude}  震源の深さ:{eew.depth}";
                         break;
                     case "none":
                         label1.Text = "EEWが発表されていません";
                         break;
+                    default://これは上の5つのどれにも該当しなかったときの挙動
+                        label1.Text = "エラーが発生しました。";
+                        break;
                 }
             }
-            catch (Exception ex){
-
+            catch 
+            {
                 timer1.Enabled = false;
-                await Task.Delay(100);
+                timer2.Enabled = false;
+                label1.Text = "エラーが発生しました。";
+                await Task.Delay(1000);
                 timer1.Enabled = true;
+                timer2.Enabled = true;
             }
-
         }
 
-    }    
+        private async void timer2_Tick(object sender, EventArgs e)//振動レベル
+        {
+            var json = await client.GetStringAsync($"https://kwatch-24h.net/EQLevel.json");//Jsonを取得
+            var eql = JsonConvert.DeserializeObject<EQL.Root>(json);//Jsonを解析 クラスはEQLevel.csにあります
+            label4.Text = eql.l;//lを表示
+            label5.Text = eql.t;//
+        }
+    }
 }
